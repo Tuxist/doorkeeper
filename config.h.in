@@ -1,0 +1,5 @@
+#define ${CMAKE_SYSTEM_NAME}
+
+#define MODULPATH "${CMAKE_INSTALL_PREFIX}/lib/pidoorkeeper/"
+
+#define DEBUG
