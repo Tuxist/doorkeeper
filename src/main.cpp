@@ -20,6 +20,8 @@ along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 ************************************************************************/
 
 #include <iostream>
+#include <thread>
+#include <mutex>
 
 #include <httppp/config.h>
 #include <httppp/httpd.h>
@@ -29,21 +31,117 @@ along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 #include "modules.h"
 
 namespace pidoorkeepder {
+  
+  class ProccessManager {
+  public:
+    class Process {
+    public:
+      Process(libhttppp::Connection *connection){
+        _Connection=connection;  
+        _nextProcess=NULL;
+        Thread=NULL;
+        Mutex=new std::mutex;
+      };
+      
+      ~Process(){
+        delete Mutex;
+        delete _nextProcess;  
+      };
+      
+      Process *nextProcess(){
+        return _nextProcess;
+      };
+      
+      libhttppp::Connection *getConnection(){
+        return _Connection;
+      };
+      
+      std::thread           *Thread;
+      std::mutex            *Mutex;
+      
+    private:
+      libhttppp::Connection *_Connection;
+
+      Process               *_nextProcess;
+      friend class           ProccessManager;
+    };
+    
+    ProccessManager(){
+      _firstProcess=NULL;
+      _lastProcess=NULL;
+    };
+    
+    Process *getProcess(libhttppp::Connection *connection){
+      for(Process *curproc=_firstProcess; curproc; curproc=curproc->nextProcess()){
+         if(connection==curproc->getConnection()){
+            return curproc;
+         }
+      }
+      return NULL;
+    };
+    
+    Process *addProcess(libhttppp::Connection *connection){
+      Process *checkprc=getProcess(connection);
+      if(checkprc!=NULL)
+        return checkprc;
+      if(_firstProcess==NULL){
+        _firstProcess=new Process(connection);
+        _lastProcess=_firstProcess;
+      }else{
+        _lastProcess->_nextProcess=new Process(connection);
+        _lastProcess=_lastProcess->_nextProcess;
+      }
+      return _lastProcess;
+    };
+    
+    void delProcess(libhttppp::Connection *connection){
+      Process *prevproc=NULL;
+      for(Process *curproc=_firstProcess; curproc; curproc=curproc->nextProcess()){
+        if(curproc->getConnection()==connection){
+          if(prevproc){
+            prevproc->_nextProcess=curproc->_nextProcess;
+            if(_lastProcess==curproc)
+              _lastProcess=prevproc;
+          }else{
+            _firstProcess=curproc->_nextProcess;
+            if(_lastProcess==curproc)
+              _lastProcess=_firstProcess;
+          }
+          curproc->_nextProcess=NULL;
+          delete curproc;
+          break;
+        }
+        prevproc=curproc;
+      }
+    };
+    
+  private:
+     Process *_firstProcess;
+     Process *_lastProcess;
+  };
+  
   class EventD : public libhttppp::Queue{
   public:
     EventD(libhttppp::ServerSocket* serversocket) : libhttppp::Queue(serversocket){
       _Modules = new Modules(MODULPATH);
-      _Controller = NULL;
+      _ProccessManager = new ProccessManager();
     };
     
     ~EventD(){
+      delete _ProccessManager;
       delete _Modules;
-      delete _Controller;
     };
     
     void RequestEvent(libhttppp::Connection *curcon){
       try{
-        _Controller = new Controller(curcon,_Modules);
+        ProccessManager::Process *curproz=_ProccessManager->addProcess(curcon);
+        if(curproz->Mutex->try_lock()){
+          curproz->Thread = new std::thread ([=]{
+            curproz->Mutex->lock();
+            Controller(curcon,_Modules);
+          });
+          curproz->Thread->detach();
+        };
       }catch(libhttppp::HTTPException &e){
         std::cerr << e.what() << "\n";
         throw e;
@@ -51,11 +149,11 @@ namespace pidoorkeepder {
     };
     
     void DisconnectEvent(libhttppp::Connection *curcon){
-       delete _Controller; 
+      _ProccessManager->delProcess(curcon);
     };
    
   private:
-    Controller *_Controller;
+    ProccessManager *_ProccessManager;
     Modules    *_Modules;
   };
   

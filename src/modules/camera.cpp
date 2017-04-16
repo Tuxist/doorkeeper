@@ -38,18 +38,21 @@ namespace pidoorkeepder {
     }
     
     virtual void runModul(libhttppp::Connection *curcon){
-      std::stringstream idxstream;
-      libhttppp::HttpResponse curres;
-      curres.setState(HTTP200);
-      curres.setVersion(HTTPVERSION(1.1));
-      curres.setContentType("video/mp4");
-      curres.send(curcon,NULL,0);
+      grabpicam(curcon);
     }
     
     virtual ~Camera(){
         
     }
-    
+  private:
+    void grabpicam(libhttppp::Connection *curcon){
+      libhttppp::HttpResponse curres;
+      curres.setState(HTTP200);
+      curres.setVersion(HTTPVERSION(1.1));
+      curres.setContentType("video/mp4");
+      curres.send(curcon,NULL,0);
+//       curcon->addSendQueue(); 
+    }
 };
 
 // the class factories

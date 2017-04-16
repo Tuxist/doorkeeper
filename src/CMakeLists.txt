@@ -12,7 +12,7 @@ include_directories(
 
 add_executable (pidoorkeeper ${pidoorkeeperSrcs})
 
-target_link_libraries(pidoorkeeper ${httppp_LIBRARIES} dl)
+target_link_libraries(pidoorkeeper ${httppp_LIBRARIES} dl pthread)
 
 install(TARGETS pidoorkeeper DESTINATION bin)
 
