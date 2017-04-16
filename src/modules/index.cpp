@@ -37,7 +37,7 @@ namespace pidoorkeepder {
       return "/";
     }
     
-    virtual void runModul(libhttppp::Connection *curcon){
+    virtual void runModul(libhttppp::Connection *curcon,libhttppp::HttpRequest *cureq){
       std::stringstream idxstream;
       idxstream << "<!DOCTYPE HTML>"
                 << " <html>"

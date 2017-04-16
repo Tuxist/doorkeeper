@@ -39,7 +39,7 @@ const char *pidoorkeepder::ModuleAPI::getControllerPath(){
   return NULL;  
 }
 
-void pidoorkeepder::ModuleAPI::runModul(libhttppp::Connection* curcon){
+void pidoorkeepder::ModuleAPI::runModul(libhttppp::Connection* curcon,libhttppp::HttpRequest *cureq){
   return;
 }
 
@@ -56,7 +56,6 @@ pidoorkeepder::Module * pidoorkeepder::Module::nextModul(){
 }
 
 pidoorkeepder::ModuleAPI *pidoorkeepder::Module::createSymbols(){
-  printf("test\n");
   create_t* create_modul = (create_t*) dlsym(_ModuleAPI, "create");
   const char* dlsym_error = dlerror();
   if (dlsym_error) {
@@ -96,6 +95,7 @@ pidoorkeepder::Modules::Modules(const char *path){
         }
      }
    }
+   closedir(dpdf);
 }
 
 pidoorkeepder::Modules::~Modules(){

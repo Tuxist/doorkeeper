@@ -149,7 +149,7 @@ namespace pidoorkeepder {
     };
     
     void DisconnectEvent(libhttppp::Connection *curcon){
-      _ProccessManager->delProcess(curcon);
+//       _ProccessManager->delProcess(curcon);
     };
    
   private:

@@ -76,14 +76,14 @@ namespace pidoorkeepder {
       return "/pidoorkeepder/camera.mp4";
     }
 
-    virtual void runModul(libhttppp::Connection *curcon){
+    virtual void runModul(libhttppp::Connection *curcon,libhttppp::HttpRequest *cureq){
       std::stringstream idxstream;
       libhttppp::HttpResponse curres;
       curres.setState(HTTP200);
       curres.setVersion(HTTPVERSION(1.1));
       curres.setContentType("video/mp4");
       curres.send(curcon,NULL,-1);
-      RecordCamera recordcam(curcon);
+//       RecordCamera recordcam(curcon);
     }
 
     virtual ~Camera(){
