@@ -34,7 +34,7 @@ namespace pidoorkeepder {
   public:
     RecordCamera(libhttppp::Connection *curcon){
       pid_t pid;
-      char buf[512];
+      char buf[BLOCKSIZE];
       int fd[2], len = 0;
 
       if(pipe(fd) < 0){
@@ -49,8 +49,8 @@ namespace pidoorkeepder {
       }
       if(pid > 0) { /* parent */
         close(fd[1]);
-        while((len = read(fd[0], &buf, 512)) > 0) {
-          curcon->addSendQueue((const char*)&buf,512);
+        while((len = read(fd[0], &buf, BLOCKSIZE)) > 0) {
+          curcon->addSendQueue((const char*)&buf,BLOCKSIZE);
         }
       } else { /* child */
         close(fd[0]);
