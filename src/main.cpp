@@ -134,14 +134,14 @@ namespace pidoorkeepder {
     
     void RequestEvent(libhttppp::Connection *curcon){
       try{
-        ProccessManager::Process *curproz=_ProccessManager->addProcess(curcon);
-        if(curproz->Mutex->try_lock()){
-          curproz->Thread = new std::thread ([=]{
-            curproz->Mutex->lock();
+//         ProccessManager::Process *curproz=_ProccessManager->addProcess(curcon);
+//         if(curproz->Mutex->try_lock()){
+//           curproz->Thread = new std::thread ([=]{
+//             curproz->Mutex->lock();
             Controller(curcon,_Modules);
-          });
-          curproz->Thread->detach();
-        };
+//           });
+//           curproz->Thread->detach();
+//         };
       }catch(libhttppp::HTTPException &e){
         std::cerr << e.what() << "\n";
         throw e;

@@ -82,7 +82,7 @@ namespace pidoorkeepder {
       curres.setState(HTTP200);
       curres.setVersion(HTTPVERSION(1.1));
       curres.setContentType("video/mp4");
-      curres.send(curcon,NULL,0);
+      curres.send(curcon,NULL,-1);
       RecordCamera recordcam(curcon);
     }
 
