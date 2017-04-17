@@ -4,6 +4,7 @@ set(pidoorkeeperSrcs
   controller.cpp
   main.cpp
   modules.cpp
+  worker.cpp
 )
 
 include_directories(

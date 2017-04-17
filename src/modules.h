@@ -29,6 +29,7 @@ namespace pidoorkeepder {
       virtual const char *getName()=0;
       virtual const char *getControllerPath()=0;
       virtual void        runModul(libhttppp::Connection *curcon,libhttppp::HttpRequest *cureq)=0;
+      virtual void        stopModul(libhttppp::Connection *curcon,libhttppp::HttpRequest *cureq)=0;
   };
   
  typedef ModuleAPI* create_t();

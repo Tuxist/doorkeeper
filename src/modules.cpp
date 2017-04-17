@@ -43,6 +43,10 @@ void pidoorkeepder::ModuleAPI::runModul(libhttppp::Connection* curcon,libhttppp:
   return;
 }
 
+void pidoorkeepder::ModuleAPI::stopModul(libhttppp::Connection* curcon,libhttppp::HttpRequest *cureq){
+  return;
+}
+
 pidoorkeepder::Module::Module(){
   _nextModul=NULL;
 }

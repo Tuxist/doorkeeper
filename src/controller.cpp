@@ -26,9 +26,10 @@ pidoorkeepder::Controller::Controller(libhttppp::Connection* curcon,Modules *mod
   bool found=false;
   libhttppp::HttpRequest curreq;
   curreq.parse(curcon);
+  printf("test\n");
   for(Module *curmod=modules->getfirstModule(); curmod; curmod=curmod->nextModul()){
     ModuleAPI *mapi = curmod->createSymbols();
-    if(strncmp(mapi->getControllerPath(),curreq.getRequestURL(),strlen(curreq.getRequestURL()))==0){
+    if(strcmp(mapi->getControllerPath(),curreq.getRequestURL())==0){
        printf("Controller run Modul: %s \n",mapi->getName());
        mapi->runModul(curcon,&curreq);
        found=true;
@@ -47,5 +48,5 @@ pidoorkeepder::Controller::Controller(libhttppp::Connection* curcon,Modules *mod
 }
 
 pidoorkeepder::Controller::~Controller(){
-    
+//   mapi->stopModul(curcon,&curreq);  
 }

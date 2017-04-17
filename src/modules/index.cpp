@@ -62,6 +62,10 @@ namespace pidoorkeepder {
       curres.send(curcon,data.c_str(),data.length());
     }
     
+    virtual void stopModul(libhttppp::Connection *curcon,libhttppp::HttpRequest *cureq){
+      return;
+    }
+    
     virtual ~Index(){
         
     }

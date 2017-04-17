@@ -29,8 +29,21 @@ along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 namespace pidoorkeepder {
   class Controller {
   public:
+    class ControllerInstance{
+      
+    private:
+      ControllerInstance(libhttppp::Connection*,ModuleAPI *mapi);
+      ~ControllerInstance();
+      ModuleAPI              *_MAPI;
+      libhttppp::Connection  *_Connection;
+      ControllerInstance     *_nextControllerInstance;
+      friend class Controller;
+    };
     Controller(libhttppp::Connection* curcon,Modules* modules);
     ~Controller();
+  private:
+    void addControllerInstance(libhttppp::Connection*,ModuleAPI *mapi);
+    void deleteControllerInstance(libhttppp::Connection);
   };
 };
 

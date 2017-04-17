@@ -32,8 +32,7 @@ along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 namespace pidoorkeepder {
   class RecordCamera {
   public:
-    RecordCamera(libhttppp::Connection *curcon){
-      pid_t pid;
+    void startRecording(libhttppp::Connection *curcon){
       char buf[BLOCKSIZE];
       int fd[2], len = 0;
 
@@ -41,13 +40,13 @@ namespace pidoorkeepder {
         std::cerr << "Cannot create pipe\n";
         return;
       }
-
-      pid = fork();
-      if(pid < 0){ /* failure */
-        std::cerr << "forkfailed";
+      
+      _Pid = fork();
+      if(_Pid < 0){ /* failure */
+        std::cerr << "forkfailed\n";
         return;
       }
-      if(pid > 0) { /* parent */
+      if(_Pid > 0) { /* parent */
         close(fd[1]);
         while((len = read(fd[0], &buf, BLOCKSIZE)) > 0) {
           curcon->addSendQueue((const char*)&buf,BLOCKSIZE);
@@ -57,13 +56,22 @@ namespace pidoorkeepder {
         dup2(fd[1], 1);
         dup2(fd[1], 2);
         close(fd[1]);
-        if(execle("raspivid","-t 10 -o -",NULL,NULL) < 0)
-          perror("exec");
+	if(execle("/bin/cat","cat","/dev/urandom",NULL)<0)
+	  perror("exec");
+//         if(execle("raspivid","raspivid","-t 10 -o -",NULL) < 0)
+//           perror("exec");
         quick_exit(EXIT_SUCCESS);
       }
       int status;
       waitpid(-1, &status, 0);
     };
+    
+    void stopRecording(){
+      kill(_Pid, SIGTERM);
+    };
+    
+  private:
+    pid_t _Pid;
   };
 
   class Camera : public pidoorkeepder::ModuleAPI {
@@ -83,13 +91,17 @@ namespace pidoorkeepder {
       curres.setVersion(HTTPVERSION(1.1));
       curres.setContentType("video/mp4");
       curres.send(curcon,NULL,-1);
-      RecordCamera recordcam(curcon);
+      recordcam.startRecording(curcon);
     }
 
+    virtual void stopModul(libhttppp::Connection *curcon,libhttppp::HttpRequest *cureq){
+      recordcam.stopRecording();
+    }
+    
     virtual ~Camera(){
-
     }
-
+  private:
+    RecordCamera recordcam;
 };
 
 // the class factories
