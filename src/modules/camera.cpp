@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 ************************************************************************/
 
+#include <thread>
 #include <cstdio>
 #include <iostream>
 #include <sstream>
@@ -32,11 +33,14 @@ along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 namespace pidoorkeepder {
   class RecordCamera {
   public:
-    void startRecording(libhttppp::Connection *curcon){
-      char buf[BLOCKSIZE];
-      int fd[2], len = 0;
+    RecordCamera(libhttppp::Connection *curcon){
+      _Curcon=curcon;
+    };
+    
+    void startRecording(){
+      
 
-      if(pipe(fd) < 0){
+      if(pipe(_FD) < 0){
         std::cerr << "Cannot create pipe\n";
         return;
       }
@@ -47,15 +51,14 @@ namespace pidoorkeepder {
         return;
       }
       if(_Pid > 0) { /* parent */
-        close(fd[1]);
-        while((len = read(fd[0], &buf, BLOCKSIZE)) > 0) {
-          curcon->addSendQueue((const char*)&buf,BLOCKSIZE);
-        }
+        close(_FD[1]);
+	std::thread recthrd=std::thread([=] {sendSTDout();});
+	recthrd.detach();
       } else { /* child */
-        close(fd[0]);
-        dup2(fd[1], 1);
-        dup2(fd[1], 2);
-        close(fd[1]);
+        close(_FD[0]);
+        dup2(_FD[1], 1);
+        dup2(_FD[1], 2);
+        close(_FD[1]);
 	if(execle("/bin/cat","cat","/dev/urandom",NULL)<0)
 	  perror("exec");
 //         if(execle("raspivid","raspivid","-t 10 -o -",NULL) < 0)
@@ -71,7 +74,16 @@ namespace pidoorkeepder {
     };
     
   private:
+    void sendSTDout(){
+      char buf[BLOCKSIZE];
+      int len = 0;
+      while((len = read(_FD[0], &buf, BLOCKSIZE)) > 0) {
+        _Curcon->addSendQueue((const char*)&buf,len);
+      }
+    }
     pid_t _Pid;
+    int   _FD[2];
+    libhttppp::Connection *_Curcon;
   };
 
   class Camera : public pidoorkeepder::ModuleAPI {
@@ -87,21 +99,22 @@ namespace pidoorkeepder {
     virtual void runModul(libhttppp::Connection *curcon,libhttppp::HttpRequest *cureq){
       std::stringstream idxstream;
       libhttppp::HttpResponse curres;
+      _RecordCamera=new RecordCamera(curcon);
       curres.setState(HTTP200);
       curres.setVersion(HTTPVERSION(1.1));
       curres.setContentType("video/mp4");
       curres.send(curcon,NULL,-1);
-      recordcam.startRecording(curcon);
+      _RecordCamera->startRecording();
     }
 
     virtual void stopModul(libhttppp::Connection *curcon,libhttppp::HttpRequest *cureq){
-      recordcam.stopRecording();
+      _RecordCamera->stopRecording();
     }
     
     virtual ~Camera(){
     }
   private:
-    RecordCamera recordcam;
+    RecordCamera *_RecordCamera;
 };
 
 // the class factories
