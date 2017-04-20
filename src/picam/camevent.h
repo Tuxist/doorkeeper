@@ -22,7 +22,7 @@ along with pidoorkeepder.  If not, see <http://www.gnu.org/licenses/>.
 #include <httppp/config.h>
 #include <httppp/httpd.h>
 #include <httppp/event.h>
-#include "httppp/http.h"
+#include <httppp/http.h>
 
 #ifndef CAMEVENT_H
 #define CAMEVENT_H
@@ -37,7 +37,7 @@ namespace pidoorkeepder {
     virtual void ConnectEvent(libhttppp::Connection* curcon);
     virtual void DisconnectEvent(libhttppp::Connection* curcon);
   private:
-    libhttppp::HttpResponse _CurrentHttpResponse;
+    libhttppp::HttpResponse *_CurrentHttpResponse;
   };
 };
 

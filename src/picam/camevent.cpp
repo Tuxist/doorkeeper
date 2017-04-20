@@ -38,11 +38,11 @@ void pidoorkeepder::CamEvent::RequestEvent(libhttppp::Connection* curcon){
   if(_CurrentHttpResponse)
     delete _CurrentHttpResponse;
   _CurrentHttpResponse = new libhttppp::HttpResponse;
-  _CurrentHttpResponse.setState(HTTP200);
-  _CurrentHttpResponse.setVersion(HTTPVERSION(1.1));
-  _CurrentHttpResponse.setContentType("video/mp4");
-  _CurrentHttpResponse.setData("Transfer-Encoding","chunked");
-  _CurrentHttpResponse.send(curcon,NULL,-1);
+  _CurrentHttpResponse->setState(HTTP200);
+  _CurrentHttpResponse->setVersion(HTTPVERSION(1.1));
+  _CurrentHttpResponse->setContentType("video/mp4");
+  _CurrentHttpResponse->setData("Transfer-Encoding","chunked");
+  _CurrentHttpResponse->send(curcon,NULL,-1);
 }
 
 void pidoorkeepder::CamEvent::ResponseEvent(libhttppp::Connection* curcon){
