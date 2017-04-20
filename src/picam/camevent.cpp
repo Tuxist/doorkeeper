@@ -36,14 +36,17 @@ pidoorkeepder::CamEvent::~CamEvent(){
 
 void pidoorkeepder::CamEvent::RequestEvent(libhttppp::Connection* curcon){
 //   std::stringstream idxstream;
+  curcon->cleanSendData();
   libhttppp::HttpResponse curres;
   curres.setState(HTTP200);
   curres.setVersion(HTTPVERSION(1.1));
   curres.setContentType("video/mp4");
+  curres.setData("Transfer-Encoding","chunked");
   curres.send(curcon,NULL,-1);
 }
 
 void pidoorkeepder::CamEvent::ResponseEvent(libhttppp::Connection* curcon){
+  std::cerr << "test\n";
   char *buf;
   RecordCamera rcam;
   ssize_t buflen= rcam.getCameraBuffer(&buf);
@@ -55,6 +58,7 @@ void pidoorkeepder::CamEvent::ConnectEvent(libhttppp::Connection* curcon){
 }
 
 void pidoorkeepder::CamEvent::DisconnectEvent(libhttppp::Connection* curcon){
+  curcon->cleanSendData();
 }
 
 
