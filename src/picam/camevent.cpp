@@ -20,33 +20,34 @@ along with pidoorkeepder.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <iostream>
 
-#include "httppp/http.h"
-
 #include "camevent.h"
 #include "recordcam.h"
 
 
 pidoorkeepder::CamEvent::CamEvent(libhttppp::ServerSocket* serversocket) : libhttppp::Queue(serversocket){
-
+  _CurrentHttpResponse=NULL;
 }
 
 pidoorkeepder::CamEvent::~CamEvent(){
-
+  delete _CurrentHttpResponse;
 }
 
 void pidoorkeepder::CamEvent::RequestEvent(libhttppp::Connection* curcon){
 //   std::stringstream idxstream;
   curcon->cleanSendData();
-  libhttppp::HttpResponse curres;
-  curres.setState(HTTP200);
-  curres.setVersion(HTTPVERSION(1.1));
-  curres.setContentType("video/mp4");
-  curres.setData("Transfer-Encoding","chunked");
-  curres.send(curcon,NULL,-1);
+  if(_CurrentHttpResponse)
+    delete _CurrentHttpResponse;
+  _CurrentHttpResponse = new libhttppp::HttpResponse;
+  _CurrentHttpResponse.setState(HTTP200);
+  _CurrentHttpResponse.setVersion(HTTPVERSION(1.1));
+  _CurrentHttpResponse.setContentType("video/mp4");
+  _CurrentHttpResponse.setData("Transfer-Encoding","chunked");
+  _CurrentHttpResponse.send(curcon,NULL,-1);
 }
 
 void pidoorkeepder::CamEvent::ResponseEvent(libhttppp::Connection* curcon){
-  std::cerr << "test\n";
+  if(!_CurrentHttpResponse)
+    return;
   char *buf;
   RecordCamera rcam;
   ssize_t buflen= rcam.getCameraBuffer(&buf);
