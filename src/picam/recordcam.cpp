@@ -77,12 +77,14 @@ void pidoorkeepder::RecordCamera::stopRecording(){
 };
 
 ssize_t pidoorkeepder::RecordCamera::getCameraBuffer(char **Buffer){
-  while(!RecordCamera::lockBuf.try_lock()){};
-  ssize_t len=RecordCamera::BufferSize;
-  *Buffer=new char[len];
-  std::copy(RecordCamera::Buffer,RecordCamera::Buffer+len,*Buffer);
-  RecordCamera::lockBuf.unlock();
-  return len;
+  if(RecordCamera::lockBuf.try_lock()){
+    ssize_t len=RecordCamera::BufferSize;
+    *Buffer=new char[len];
+    std::copy(RecordCamera::Buffer,RecordCamera::Buffer+len,*Buffer);
+    RecordCamera::lockBuf.unlock();
+    return len;
+  }
+  return -1;
 }
 
 
