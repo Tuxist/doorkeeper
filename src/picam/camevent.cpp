@@ -52,7 +52,7 @@ void pidoorkeepder::CamEvent::ResponseEvent(libhttppp::Connection* curcon){
   RecordCamera rcam;
   ssize_t buflen= rcam.getCameraBuffer(&buf);
   char sendsize[255];
-  snprintf(sendsize,255,"%zu \r\n",buflen);
+  snprintf(sendsize,255,"%x \r\n",buflen);
   curcon->addSendQueue(sendsize,strlen(sendsize));
   curcon->addSendQueue(buf,buflen);
   delete[] buf;
