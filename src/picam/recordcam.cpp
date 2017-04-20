@@ -64,7 +64,7 @@ void pidoorkeepder::RecordCamera::startRecording(){
         close(fd[1]);
 	if(execle("/bin/cat","cat","/dev/urandom",NULL)<0)
 	  perror("exec");
-//         if(execle("raspivid","raspivid","-t 10 -o -",NULL) < 0)
+//         if(execle("raspivid","raspivid","-t","10","-o","-",NULL,NULL) < 0)
 //           perror("exec");
         quick_exit(EXIT_SUCCESS);
       }
