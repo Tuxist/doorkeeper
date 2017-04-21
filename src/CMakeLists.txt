@@ -4,4 +4,4 @@ include_directories(
   ${httppp_INCLUDE_DIR}
 )
 
-add_subdirectory(picam)
+add_subdirectory(doorcam)
