@@ -25,8 +25,7 @@ along with pidoorkeepder.  If not, see <http://www.gnu.org/licenses/>.
 #include <httppp/httpd.h>
 #include <httppp/event.h>
 
-#include "camevent.h"
-#include "recordcam.h"
+#include "httpevent.h"
 
 namespace pidoorkeepder {
   class DoorCamD : public libhttppp::HttpD {
@@ -34,8 +33,8 @@ namespace pidoorkeepder {
     DoorCamD(int argc, char** argv) : libhttppp::HttpD(argc,argv){
       libhttppp::HTTPException httpexception;
       try {
-        CamEvent eventd(getServerSocket());
-	eventd.runEventloop();
+        HTTPEvent eventd(getServerSocket());
+	    eventd.runEventloop();
       }catch(libhttppp::HTTPException &e){
         std::cerr << e.what() << "\n";
       }
@@ -45,10 +44,5 @@ namespace pidoorkeepder {
 }
 
 int main(int argc, char** argv){
-  std::thread t1=std::thread([]{
-    pidoorkeepder::RecordCamera::startRecording();
-  });
   pidoorkeepder::DoorCamD(argc,argv);
-  pidoorkeepder::RecordCamera::stopRecording();
-  t1.join();
 }

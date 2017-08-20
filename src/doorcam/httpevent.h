@@ -20,26 +20,25 @@ along with pidoorkeepder.  If not, see <http://www.gnu.org/licenses/>.
 ************************************************************************/
 
 #include <httppp/config.h>
-#include <mutex>
+#include <httppp/httpd.h>
+#include <httppp/event.h>
+#include <httppp/http.h>
 
-#ifndef RECORDCAM_H
-#define RECORDCAM_H
+#ifndef HTTPEVENT_H
+#define HTTPEVENT_H
+
 namespace pidoorkeepder {
-  class RecordCamera {
+  class HTTPEvent : public libhttppp::Queue{
   public:
-    RecordCamera();
-    
-    static void startRecording();
-    static void stopRecording();
-    
-    ssize_t getCameraBuffer(char **Buffer);
-
-    //static vars
-    static pid_t      Pid;
-    static std::mutex lockBuf;
-    static char       Buffer[BLOCKSIZE];
-    static ssize_t    BufferSize;     
+    HTTPEvent(libhttppp::ServerSocket* serversocket);
+    ~HTTPEvent();
+    virtual void RequestEvent(libhttppp::Connection* curcon);
+    virtual void ResponseEvent(libhttppp::Connection* curcon);
+    virtual void ConnectEvent(libhttppp::Connection* curcon);
+    virtual void DisconnectEvent(libhttppp::Connection* curcon);
   private:
+    libhttppp::HttpResponse *_CurrentHttpResponse;
   };
 };
+
 #endif

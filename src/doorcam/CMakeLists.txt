@@ -2,8 +2,7 @@ find_package(httppp REQUIRED)
 
 set(doorcamSrcs
   doorcam.cpp
-  camevent.cpp
-  recordcam.cpp
+  httpevent.cpp
 )
 
 include_directories(

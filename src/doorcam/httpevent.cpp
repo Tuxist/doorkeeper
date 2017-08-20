@@ -19,20 +19,20 @@ along with pidoorkeepder.  If not, see <http://www.gnu.org/licenses/>.
 ************************************************************************/
 
 #include <iostream>
+#include <thread>
 
-#include "camevent.h"
-#include "recordcam.h"
+#include "httpevent.h"
 
 
-pidoorkeepder::CamEvent::CamEvent(libhttppp::ServerSocket* serversocket) : libhttppp::Queue(serversocket){
+pidoorkeepder::HTTPEvent::HTTPEvent(libhttppp::ServerSocket* serversocket) : libhttppp::Queue(serversocket){
   _CurrentHttpResponse=NULL;
 }
 
-pidoorkeepder::CamEvent::~CamEvent(){
+pidoorkeepder::HTTPEvent::~HTTPEvent(){
   delete _CurrentHttpResponse;
 }
 
-void pidoorkeepder::CamEvent::RequestEvent(libhttppp::Connection* curcon){
+void pidoorkeepder::HTTPEvent::RequestEvent(libhttppp::Connection* curcon){
 //   std::stringstream idxstream;
   curcon->cleanSendData();
   if(_CurrentHttpResponse)
@@ -43,25 +43,33 @@ void pidoorkeepder::CamEvent::RequestEvent(libhttppp::Connection* curcon){
   _CurrentHttpResponse->setContentType("video/mp4");
   _CurrentHttpResponse->setData("Transfer-Encoding","chunked");
   _CurrentHttpResponse->send(curcon,NULL,-1);
+  RecordCamera rcam;
+  std::thread t1=std::thread([]{
+//       rcam.startRecording();
+  });
+  rcam.stopRecording();
+  t1.join();
 }
 
-void pidoorkeepder::CamEvent::ResponseEvent(libhttppp::Connection* curcon){
+void pidoorkeepder::HTTPEvent::ResponseEvent(libhttppp::Connection* curcon){
   if(!_CurrentHttpResponse)
     return;
-  char *buf;
+  char *buf=NULL;
   RecordCamera rcam;
-  ssize_t buflen= rcam.getCameraBuffer(&buf);
+  int buflen= rcam.getCameraBuffer(&buf);
   char sendsize[255];
-  snprintf(sendsize,255,"%x \r\n",buflen);
-  curcon->addSendQueue(sendsize,strlen(sendsize));
-  curcon->addSendQueue(buf,buflen);
+  if(buflen!=0){
+    snprintf(sendsize,255,"%x \r\n",buflen);
+    curcon->addSendQueue(sendsize,strlen(sendsize));
+    curcon->addSendQueue(buf,buflen);
+  }
   delete[] buf;
 }
 
-void pidoorkeepder::CamEvent::ConnectEvent(libhttppp::Connection* curcon){
+void pidoorkeepder::HTTPEvent::ConnectEvent(libhttppp::Connection* curcon){
 }
 
-void pidoorkeepder::CamEvent::DisconnectEvent(libhttppp::Connection* curcon){
+void pidoorkeepder::HTTPEvent::DisconnectEvent(libhttppp::Connection* curcon){
   curcon->cleanSendData();
 }
 
